@@ -7,7 +7,7 @@ import { useState } from 'react';
 let websocket: WebSocket;
 function connectWebsocket(endpoint: string) {
   if (!websocket) {
-    websocket = new WebSocket(`ws://localhost:10001/${endpoint}`);
+    websocket = new WebSocket(`wss://ws.unispaces.uk/${endpoint}`);
   }
 }
 
@@ -23,7 +23,7 @@ export function Room() {
 
   const sendWsEvent = (e: any) => {
     const msg = {
-      type: 'textarea',
+      type: 'textArea',
       message: e.target.value,
     };
     websocket.send(JSON.stringify(msg));
@@ -41,15 +41,17 @@ export function Room() {
   setTimeout(() => {
     websocket.onmessage = (e: MessageEvent) => {
       const data = JSON.parse(e.data);
-      // console.log(data);
-      // setTextContent(data.message);
-
       console.log(data);
+      setTextContent(data.message);
+
       if (data.type === 'canvasReset') {
         return dispatchEvent(resetEvent);
       }
 
       setOtherData(data);
+      if (data.type === 'textArea') {
+        setTextContent(data.message);
+      }
     };
   }, 3000);
 

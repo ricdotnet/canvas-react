@@ -39,8 +39,8 @@ export function Canvas(props?: IProps) {
 
   useEffect(() => {
     const canvas: HTMLCanvasElement = canvasRef.current!;
-    canvas.height = canvasSize.y;
-    canvas.width = canvasSize.x;
+    canvas.height = 2000;
+    canvas.width = 2000;
     const context = canvas.getContext('2d');
     context!.createImageData(canvasSize.x, canvasSize.y);
 

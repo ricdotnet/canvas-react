@@ -34,5 +34,13 @@ wss.on('connection', (connection, req) => {
         }
       });
     }
+
+    if (data.type === 'textArea') {
+      clients.forEach((value, key) => {
+        if (key !== connection && value === req.url) {
+          key.send(JSON.stringify(data));
+        }
+      });
+    }
   });
 });
