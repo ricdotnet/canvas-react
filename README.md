@@ -1,6 +1,6 @@
 ### Painting with HTML5 and websockets.
 
-To start the server
+To start the websocket server
 ```shell
 node wss.js
 ```
