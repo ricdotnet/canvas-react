@@ -1,0 +1,9 @@
+body {
+    padding: 0;
+    margin: 20px;
+}
+
+.users-list {
+    display: flex;
+    flex-direction: column;
+}

@@ -1,0 +1,12 @@
+.container {
+    display: flex;
+
+}
+
+.drawing-area {
+    /*background-color: red;*/
+    border: 1px solid #cacaca;
+    height: 500px;
+    width: 500px;
+    margin-right: 25px;
+}
