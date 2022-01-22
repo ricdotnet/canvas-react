@@ -1,9 +1,9 @@
-import { Paint } from './Components/Paint/Paint';
+import { Canvas } from './Components/Canvas/Canvas';
 
 export function App() {
   return (
     <>
-      <Paint />
+      <Canvas />
     </>
   );
 }
