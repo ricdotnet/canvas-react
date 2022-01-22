@@ -2,8 +2,7 @@ import './Canvas.css';
 import { useEffect, useRef, useState } from 'react';
 import { Color } from '../Color/Color';
 
-// const ws = new WebSocket('ws://localhost:3001');
-
+// const ws = new WebSocket('ws://148.251.49.251:10000');
 interface ILocation {
   x: number;
   y: number;
@@ -40,19 +39,27 @@ export function Canvas() {
   }, []);
 
   // ws.onopen = () => {
-  // const userId = Date.now();
-  // ws.send(userId.toString());
+  //   const userId = Date.now();
+  //   ws.send(userId.toString());
   // };
   // ws.onmessage! = (e) => {
-  // const newUsers = [...users, e.data];
-  // setUsers(newUsers);
-  // console.log(JSON.parse(e.data));
+  //   // const newUsers = [...users, e.data];
+  //   // setUsers(newUsers);
+  //   // console.log(JSON.parse(e.data));
   //   drawOther(JSON.parse(e.data));
   // };
 
   const setStart = (e: any) => {
     const bb = canvasData!.getBoundingClientRect();
     setLocation({ x: e.clientX - bb.x, y: e.clientY - bb.y });
+    contextData!.beginPath();
+    contextData!.lineWidth = 5;
+    contextData!.lineCap = 'round';
+    contextData!.lineJoin = 'miter';
+    contextData!.strokeStyle = color
+    contextData!.moveTo(e.clientX - bb.x, e.clientY - bb.y);
+    contextData!.lineTo(e.clientX - bb.x, e.clientY - bb.y);
+    contextData!.stroke();
     setIsMouseClicked(true);
   };
 
@@ -60,6 +67,7 @@ export function Canvas() {
     if (isMouseClicked) {
       const bb = canvasData!.getBoundingClientRect();
       const cLoc = { x: e.clientX - bb.x, y: e.clientY - bb.y };
+      // sendStart(cLoc.x, cLoc.y);
       contextData!.beginPath();
       contextData!.lineWidth = 5;
       contextData!.lineCap = 'round';
@@ -74,14 +82,14 @@ export function Canvas() {
     }
   };
 
-  // const sendStart = () => {
+  // const sendStart = (x: number, y: number) => {
   //   const drawDataStart = {
   //     ket: 'start',
   //     user: user,
   //     color: color,
   //     moveTo: {
-  //       x: location.x,
-  //       y: location.y,
+  //       x: x,
+  //       y: y,
   //     },
   //   };
   //   ws.send(JSON.stringify(drawDataStart));
@@ -144,7 +152,9 @@ export function Canvas() {
           selected={color === 'purple'}
           onClick={() => handleColorSelect('purple')}
         />
-        <button className="reset-button" onClick={() => reset()}>Reset</button>
+        <button className="reset-button" onClick={() => reset()}>
+          Reset
+        </button>
       </div>
       <canvas
         ref={myRef}
