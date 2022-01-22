@@ -10,10 +10,6 @@ interface ILocation {
 
 export function Canvas() {
   const [isMouseClicked, setIsMouseClicked] = useState<boolean>(false);
-  const [startLocation, setStartLocation] = useState<ILocation>({
-    x: 0,
-    y: 0,
-  });
   const [location, setLocation] = useState<ILocation>({
     x: 0,
     y: 0,
@@ -21,16 +17,22 @@ export function Canvas() {
   const [color, setColor] = useState('red');
 
   const [user, setUser] = useState('');
+  const [imageData, setImageData] = useState<ImageData>();
 
   const myRef = useRef(null);
+  const [canvasSize, setCanvasSize] = useState({
+    x: window.innerWidth,
+    y: window.innerHeight,
+  });
   const [canvasData, setCanvasData] = useState<HTMLCanvasElement>();
   const [contextData, setContextData] = useState<CanvasRenderingContext2D>();
   useEffect(() => {
     const canvas: HTMLCanvasElement = myRef.current!;
-    canvas.height = 500;
-    canvas.width = 500;
+    console.log(canvasSize.y);
+    canvas.height = canvasSize.y;
+    canvas.width = canvasSize.x;
     const context = canvas.getContext('2d');
-    context!.createImageData(500, 500);
+    context!.createImageData(canvasSize.x, canvasSize.y);
 
     setCanvasData(canvas);
     setContextData(context!);
@@ -49,24 +51,44 @@ export function Canvas() {
   //   drawOther(JSON.parse(e.data));
   // };
 
+  window.addEventListener('resize', () => {
+    // const data = contextData!.getImageData(0, 0, window.innerWidth, window.innerHeight);
+    canvasData!.width = window.innerWidth;
+    canvasData!.height = window.innerHeight;
+
+    contextData!.putImageData(imageData!, 0, 0);
+  });
+
   const setStart = (e: any) => {
-    const bb = canvasData!.getBoundingClientRect();
-    setLocation({ x: e.clientX - bb.x, y: e.clientY - bb.y });
-    contextData!.beginPath();
-    contextData!.lineWidth = 5;
-    contextData!.lineCap = 'round';
-    contextData!.lineJoin = 'miter';
-    contextData!.strokeStyle = color
-    contextData!.moveTo(e.clientX - bb.x, e.clientY - bb.y);
-    contextData!.lineTo(e.clientX - bb.x, e.clientY - bb.y);
-    contextData!.stroke();
+    // const bb = canvasData!.getBoundingClientRect();
+    setLocation({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
+  };
+
+  const mouseDown = (e: any) => {
     setIsMouseClicked(true);
+    setLocation({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
+    contextData!.putImageData(imageData!, 0,0);
+    // const bb = canvasData!.getBoundingClientRect();
+    // setLocation({ x: e.clientX - bb.x, y: e.clientY - bb.y });
+    // contextData!.beginPath();
+    // contextData!.lineWidth = 5;
+    // contextData!.lineCap = 'round';
+    // contextData!.lineJoin = 'miter';
+    // contextData!.strokeStyle = color
+    // contextData!.moveTo(e.clientX - bb.x, e.clientY - bb.y);
+    // contextData!.lineTo(e.clientX - bb.x, e.clientY - bb.y);
+    // contextData!.stroke();
+  };
+
+  const mouseUp = () => {
+    setIsMouseClicked(false);
+    setImageData(contextData!.getImageData(0,0,window.innerWidth, window.innerHeight));
   };
 
   const draw = (e: any) => {
     if (isMouseClicked) {
       const bb = canvasData!.getBoundingClientRect();
-      const cLoc = { x: e.clientX - bb.x, y: e.clientY - bb.y };
+      const cLoc = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
       // sendStart(cLoc.x, cLoc.y);
       contextData!.beginPath();
       contextData!.lineWidth = 5;
@@ -125,6 +147,7 @@ export function Canvas() {
   };
 
   const reset = () => {
+    setImageData(null!);
     contextData!.clearRect(0, 0, canvasData!.width, canvasData!.height);
   };
 
@@ -133,7 +156,7 @@ export function Canvas() {
   };
 
   return (
-    <div className="container">
+    <div>
       <div className="color-row">
         <Color color="red" selected={color === 'red'} onClick={() => handleColorSelect('red')} />
         <Color
@@ -159,9 +182,9 @@ export function Canvas() {
       <canvas
         ref={myRef}
         className="drawing-area"
-        onMouseMove={(e) => draw(e)}
-        onMouseDown={(e) => setStart(e)}
-        onMouseUp={() => setIsMouseClicked(false)}
+        onPointerDown={(e) => mouseDown(e)}
+        onPointerMove={(e) => draw(e)}
+        onPointerUp={mouseUp}
       />
     </div>
   );
