@@ -152,8 +152,6 @@ export function Canvas() {
         onMouseMove={(e) => draw(e)}
         onMouseDown={(e) => setStart(e)}
         onMouseUp={() => setIsMouseClicked(false)}
-        onTouchMove={(e) => draw(e)}
-        onTouchStart={(e) => setStart(e)}
       />
     </div>
   );
