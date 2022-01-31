@@ -8,27 +8,32 @@ interface ILocation {
   y: number;
 }
 
-export function Canvas() {
-  const [isMouseClicked, setIsMouseClicked] = useState<boolean>(false);
-  const [location, setLocation] = useState<ILocation>({
-    x: 0,
-    y: 0,
-  });
-  const [color, setColor] = useState('red');
+interface IProps {
+  room?: string;
+  ws?: WebSocket;
+  user?: number;
+}
 
-  const [user, setUser] = useState('');
+export function Canvas(props?: IProps) {
+  const [isMouseClicked, setIsMouseClicked] = useState<boolean>(false);
+  const [location, setLocation] = useState<ILocation>({ x: 0, y: 0 });
+  const [color, setColor] = useState('red');
+  // const [user, setUser] = useState('');
   const [imageData, setImageData] = useState<ImageData>();
+  const [canvasData, setCanvasData] = useState<HTMLCanvasElement>();
+  const [contextData, setContextData] = useState<CanvasRenderingContext2D>();
+  const [previousData, setPreviousData] = useState<ImageData[]>([]);
+  const [keysPressed, setKeysPressed] = useState({ z: false, control: false });
+  const [prop, setProp] = useState(props!);
+  const [roomId, setRoomId] = useState(prop.room);
 
   const myRef = useRef(null);
   const [canvasSize, setCanvasSize] = useState({
     x: window.innerWidth,
     y: window.innerHeight,
   });
-  const [canvasData, setCanvasData] = useState<HTMLCanvasElement>();
-  const [contextData, setContextData] = useState<CanvasRenderingContext2D>();
   useEffect(() => {
     const canvas: HTMLCanvasElement = myRef.current!;
-    console.log(canvasSize.y);
     canvas.height = canvasSize.y;
     canvas.width = canvasSize.x;
     const context = canvas.getContext('2d');
@@ -37,19 +42,22 @@ export function Canvas() {
     setCanvasData(canvas);
     setContextData(context!);
 
-    setUser(Date.now().toString());
+    // setUser(Date.now().toString());
   }, []);
 
   // ws.onopen = () => {
   //   const userId = Date.now();
   //   ws.send(userId.toString());
   // };
-  // ws.onmessage! = (e) => {
-  //   // const newUsers = [...users, e.data];
-  //   // setUsers(newUsers);
-  //   // console.log(JSON.parse(e.data));
-  //   drawOther(JSON.parse(e.data));
-  // };
+  if (prop.ws) {
+    prop.ws.onmessage! = (e: any) => {
+      // const newUsers = [...users, e.data];
+      // setUsers(newUsers);
+      // console.log(JSON.parse(e.data));
+      drawOther(JSON.parse(e.data));
+      // console.log(e.data);
+    };
+  }
 
   window.addEventListener('resize', () => {
     // const data = contextData!.getImageData(0, 0, window.innerWidth, window.innerHeight);
@@ -57,6 +65,11 @@ export function Canvas() {
     canvasData!.height = window.innerHeight;
 
     contextData!.putImageData(imageData!, 0, 0);
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'u') {
+      undo();
+    }
   });
 
   const setStart = (e: any) => {
@@ -67,27 +80,45 @@ export function Canvas() {
   const mouseDown = (e: any) => {
     setIsMouseClicked(true);
     setLocation({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
-    contextData!.putImageData(imageData!, 0,0);
-    // const bb = canvasData!.getBoundingClientRect();
-    // setLocation({ x: e.clientX - bb.x, y: e.clientY - bb.y });
+
+    // TODO: This throws an error of invalid type for ImageData when resetting or when starting.
+    // Solution: using an array to store only 1 object of ImageData everytime and restore if length===1 is true.
+    // contextData!.putImageData(imageData!, 0, 0);
     // contextData!.beginPath();
     // contextData!.lineWidth = 5;
     // contextData!.lineCap = 'round';
     // contextData!.lineJoin = 'miter';
-    // contextData!.strokeStyle = color
-    // contextData!.moveTo(e.clientX - bb.x, e.clientY - bb.y);
-    // contextData!.lineTo(e.clientX - bb.x, e.clientY - bb.y);
+    // contextData!.strokeStyle = color;
+    // contextData!.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    // contextData!.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
     // contextData!.stroke();
   };
 
   const mouseUp = () => {
     setIsMouseClicked(false);
-    setImageData(contextData!.getImageData(0,0,window.innerWidth, window.innerHeight));
+    setImageData(contextData!.getImageData(0, 0, window.innerWidth, window.innerHeight));
+    savePreviousData();
+  };
+
+  const savePreviousData = () => {
+    if (imageData !== undefined) {
+      previousData.push(imageData!);
+      // console.log(imageData);
+      setPreviousData(previousData);
+    }
+  };
+  const undo = () => {
+    if (previousData.length > 0) {
+      const last: ImageData = previousData[previousData.length - 1];
+      contextData!.putImageData(last, 0, 0);
+      previousData.pop();
+      return;
+    }
+    // }
   };
 
   const draw = (e: any) => {
     if (isMouseClicked) {
-      const bb = canvasData!.getBoundingClientRect();
       const cLoc = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
       // sendStart(cLoc.x, cLoc.y);
       contextData!.beginPath();
@@ -100,50 +131,56 @@ export function Canvas() {
       // contextData!.bezierCurveTo(cLoc.x, cLoc.y, location.x, location.y, location.x, location.y);
       contextData!.lineTo(location.x, location.y);
       contextData!.stroke();
+      // sendEnd();
       setStart(e);
+      sendStart(location.x, location.y);
     }
   };
 
-  // const sendStart = (x: number, y: number) => {
-  //   const drawDataStart = {
-  //     ket: 'start',
-  //     user: user,
-  //     color: color,
-  //     moveTo: {
-  //       x: x,
-  //       y: y,
-  //     },
-  //   };
-  //   ws.send(JSON.stringify(drawDataStart));
-  // }
-  // const sendEnd = () => {
-  //   const drawDataEnd = {
-  //     key: 'end',
-  //     user: user,
-  //     color: color,
-  //     lineTo: {
-  //       x: location.x,
-  //       y: location.y,
-  //     },
-  //   };
-  //   ws.send(JSON.stringify(drawDataEnd));
-  // }
+  const sendStart = (x: number, y: number) => {
+    if (prop.room) {
+      const drawDataStart = {
+        key: 'start',
+        user: prop.user,
+        color: color,
+        moveTo: {
+          x: x,
+          y: y,
+        },
+      };
+      prop.ws!.send(JSON.stringify(drawDataStart));
+    }
+  };
+  const sendEnd = () => {
+    if (prop.room) {
+      const drawDataEnd = {
+        key: 'end',
+        user: prop.user,
+        color: color,
+        lineTo: {
+          x: location.x,
+          y: location.y,
+        },
+      };
+      prop.ws!.send(JSON.stringify(drawDataEnd));
+    }
+  };
 
   const drawOther = (data: any) => {
-    if (data.user !== user) {
-      contextData!.beginPath();
-      contextData!.lineWidth = 5;
-      contextData!.lineCap = 'round';
-      contextData!.strokeStyle = data.color;
+    // if (data.user !== user) {
+    contextData!.beginPath();
+    contextData!.lineWidth = 5;
+    contextData!.lineCap = 'round';
+    contextData!.strokeStyle = data.color;
 
-      if (data.moveTo) {
-        contextData!.moveTo(data.moveTo.x, data.moveTo.y);
-      }
-      if (data.lineTo) {
-        contextData!.lineTo(data.lineTo.x, data.lineTo.y);
-      }
-      contextData!.stroke();
+    if (data.moveTo) {
+      contextData!.moveTo(data.moveTo.x, data.moveTo.y);
     }
+    if (data.lineTo) {
+      contextData!.lineTo(data.lineTo.x, data.lineTo.y);
+    }
+    contextData!.stroke();
+    // }
   };
 
   const reset = () => {
