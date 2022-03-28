@@ -1,12 +1,15 @@
 const http = require('http');
 const { WebSocketServer } = require('ws');
 
-const server = http.createServer();
-server.listen(3001, () => {
-  console.log('Socket server is running.');
-});
+// const server = http.createServer();
+// server.listen(10001, () => {
+//   console.log('Socket server is running.');
+// });
 
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({
+  port: 10001,
+  perMessageDeflate: false,
+});
 
 const clients = new Map();
 
