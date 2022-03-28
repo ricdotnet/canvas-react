@@ -7,7 +7,8 @@ export function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Canvas />} />
-        <Route path="/:roomId" element={<Room />} />
+        <Route path="/room/:roomId" element={<Room />} />
+        {/*<Route path="/:roomId" element={<Room />} />*/}
         {/* <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

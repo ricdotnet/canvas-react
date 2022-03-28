@@ -10,30 +10,19 @@ const wss = new WebSocketServer({ server });
 
 const clients = new Map();
 
-wss.on('connection', (ws) => {
+wss.on('connection', (connection, req) => {
   console.log('A client connected!');
+  clients.set(connection, req.url);
 
-  ws.on('hello', () => {
-    console.log('jhgdbdsv');
+  connection.on('message', (rawData) => {
+    const data = JSON.parse(rawData.toString());
+
+    if (data.type === 'canvasLine') {
+      clients.forEach((value, key) => {
+        if (key !== connection && value === req.url) {
+          key.send(JSON.stringify(data));
+        }
+      });
+    }
   });
-
-  ws.on('message', (m) => {
-    // const data = JSON.parse(m.toString());
-    // if (!clients.get(ws)) {
-    //   clients.set(data.ws, data.user);
-    // }
-    // // console.log(m.toString());
-    // // wss.clients.forEach(ws => {
-    // //   ws.send(m.toString());
-    // // })
-    // console.log(clients.get(data.ws));
-
-  });
-  // ws.on('paint', () => {
-  //   console.log('painting')
-  // });
 });
-
-// wss.on('message', (wss, m) => {
-//   console.log(m);
-// });
