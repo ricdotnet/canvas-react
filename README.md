@@ -6,6 +6,8 @@ PROGRESS:
 - [ ] register websocket endpoint.
 - [ ] register new room.
 - [ ] database support to save works / canvas.
+- [ ] css to be scss.
+- [ ] *electron collaboration app.....*
 
 [//]: # (<!--### Painting with HTML5 and websockets.)
 
