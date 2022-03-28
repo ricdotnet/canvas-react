@@ -1,4 +1,4 @@
-TODO:
+PROGRESS:
 
 - [x] working canvas.
 - [x] working canvas over websockets on a room url.
