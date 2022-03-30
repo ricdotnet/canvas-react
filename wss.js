@@ -14,13 +14,20 @@ const wss = new WebSocketServer({
 const clients = new Map();
 
 wss.on('connection', (connection, req) => {
-  console.log('A client connected!');
   clients.set(connection, req.url);
 
   connection.on('message', (rawData) => {
     const data = JSON.parse(rawData.toString());
 
-    if (data.type === 'canvasLine') {
+    if (data.type === 'connection') {
+      clients.forEach((value, key) => {
+        if (key !== connection && value === req.url) {
+          return key.send(JSON.stringify(data));
+        }
+      });
+    }
+
+    if (data.type === 'canvasLine' || data.type === 'canvasReset') {
       clients.forEach((value, key) => {
         if (key !== connection && value === req.url) {
           key.send(JSON.stringify(data));

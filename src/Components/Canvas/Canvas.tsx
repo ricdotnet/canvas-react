@@ -1,4 +1,4 @@
-import './Canvas.css';
+import './Canvas.scss';
 import { useEffect, useRef, useState } from 'react';
 import { Color } from '../Color/Color';
 
@@ -13,6 +13,7 @@ interface IProps {
   ws?: WebSocket;
   user?: number;
   onChange?: (v: any) => void;
+  onReset?: () => void;
   other?: any;
 }
 
@@ -25,13 +26,19 @@ export function Canvas(props?: IProps) {
   const [contextData, setContextData] = useState<CanvasRenderingContext2D>();
   const [previousData, setPreviousData] = useState<ImageData[]>([]);
 
-  const myRef = useRef(null);
+  const canvasRef = useRef(null);
   const [canvasSize, setCanvasSize] = useState({
-    x: window.innerWidth,
-    y: window.innerHeight,
+    x: 2000,
+    y: 2000,
   });
+
+  window.addEventListener('resetEvent', () => {
+    console.log('did reset....');
+    reset();
+  });
+
   useEffect(() => {
-    const canvas: HTMLCanvasElement = myRef.current!;
+    const canvas: HTMLCanvasElement = canvasRef.current!;
     canvas.height = canvasSize.y;
     canvas.width = canvasSize.x;
     const context = canvas.getContext('2d');
@@ -41,13 +48,13 @@ export function Canvas(props?: IProps) {
     setContextData(context!);
   }, []);
 
-  window.addEventListener('resize', () => {
-    // const data = contextData!.getImageData(0, 0, window.innerWidth, window.innerHeight);
-    canvasData!.width = window.innerWidth;
-    canvasData!.height = window.innerHeight;
-
-    contextData!.putImageData(imageData!, 0, 0);
-  });
+  // window.addEventListener('resize', () => {
+  //   // const data = contextData!.getImageData(0, 0, window.innerWidth, window.innerHeight);
+  //   canvasData!.width = window.innerWidth;
+  //   canvasData!.height = window.innerHeight;
+  //
+  //   contextData!.putImageData(imageData!, 0, 0);
+  // });
   window.addEventListener('keydown', (e) => {
     if (e.key === 'u') {
       undo();
@@ -136,6 +143,11 @@ export function Canvas(props?: IProps) {
   };
   drawOther();
 
+  const handleResetOnClick = () => {
+    reset();
+    props?.onReset?.();
+  };
+
   const reset = () => {
     setImageData(null!);
     contextData!.clearRect(0, 0, canvasData!.width, canvasData!.height);
@@ -165,12 +177,12 @@ export function Canvas(props?: IProps) {
           selected={color === 'purple'}
           onClick={() => handleColorSelect('purple')}
         />
-        <button className="reset-button" onClick={() => reset()}>
+        <button className="reset-button" onClick={() => handleResetOnClick()}>
           Reset
         </button>
       </div>
       <canvas
-        ref={myRef}
+        ref={canvasRef}
         className="drawing-area"
         onPointerDown={(e) => mouseDown(e)}
         onPointerMove={(e) => draw(e)}

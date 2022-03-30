@@ -7,9 +7,11 @@ import { useState } from 'react';
 let websocket: WebSocket;
 function connectWebsocket(endpoint: string) {
   if (!websocket) {
-    websocket = new WebSocket(`ws://localhost:3001/${endpoint}`);
+    websocket = new WebSocket(`ws://localhost:10001/${endpoint}`);
   }
 }
+
+const resetEvent = new Event('resetEvent');
 
 export function Room() {
   const { roomId } = useParams();
@@ -28,11 +30,25 @@ export function Room() {
     setTextContent(msg.message);
   };
 
+  websocket.onopen = () => {
+    websocket.send(
+      JSON.stringify({
+        type: 'connection',
+      })
+    );
+  };
+
   setTimeout(() => {
     websocket.onmessage = (e: MessageEvent) => {
       const data = JSON.parse(e.data);
       // console.log(data);
       // setTextContent(data.message);
+
+      console.log(data);
+      if (data.type === 'canvasReset') {
+        return dispatchEvent(resetEvent);
+      }
+
       setOtherData(data);
     };
   }, 3000);
@@ -42,9 +58,21 @@ export function Room() {
     websocket.send(toSend);
   };
 
+  const handleCanvasReset = () => {
+    websocket.send(
+      JSON.stringify({
+        type: 'canvasReset',
+      })
+    );
+  };
+
   return (
     <div>
-      <Canvas onChange={(v: any) => handleCanvasUpdate(v)} other={otherData} />
+      <Canvas
+        onChange={(v: any) => handleCanvasUpdate(v)}
+        other={otherData}
+        onReset={handleCanvasReset}
+      />
       {/*<textarea*/}
       {/*  id={'textarea'}*/}
       {/*  rows={50}*/}

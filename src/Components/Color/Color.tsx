@@ -1,4 +1,4 @@
-import './Color.css';
+import './Color.scss';
 
 interface IColorProps {
   color: string;
@@ -8,5 +8,5 @@ interface IColorProps {
 
 export function Color({ color, selected, onClick }: IColorProps) {
 
-  return <div className={`button ${color} ${selected === true ? 'selected' : ''}`} onClick={onClick}></div>;
+  return <div className={`button ${color} ${selected ? 'button__selected' : ''}`} onClick={onClick}/>;
 }
