@@ -1,6 +1,6 @@
 import './Canvas.css';
 import { useEffect, useRef, useState } from 'react';
-import { Color } from '../Color/Color';
+import { ColorRow } from '../ColorRow/ColorRow';
 
 // const ws = new WebSocket('ws://148.251.49.251:10000');
 interface ILocation {
@@ -194,28 +194,7 @@ export function Canvas(props?: IProps) {
 
   return (
     <div>
-      <div className="color-row">
-        <Color color="red" selected={color === 'red'} onClick={() => handleColorSelect('red')} />
-        <Color
-          color="green"
-          selected={color === 'green'}
-          onClick={() => handleColorSelect('green')}
-        />
-        <Color color="blue" selected={color === 'blue'} onClick={() => handleColorSelect('blue')} />
-        <Color
-          color="yellow"
-          selected={color === '#f5dd42'}
-          onClick={() => handleColorSelect('#f5dd42')}
-        />
-        <Color
-          color="purple"
-          selected={color === 'purple'}
-          onClick={() => handleColorSelect('purple')}
-        />
-        <button className="reset-button" onClick={() => reset()}>
-          Reset
-        </button>
-      </div>
+      <ColorRow onColorChange={handleColorSelect} onReset={reset} />
       <canvas
         ref={myRef}
         className="drawing-area"
