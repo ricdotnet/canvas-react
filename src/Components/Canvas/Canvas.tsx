@@ -28,8 +28,8 @@ export function Canvas(props?: IProps) {
 
   const canvasRef = useRef(null);
   const [canvasSize, setCanvasSize] = useState({
-    x: 2000,
-    y: 2000,
+    x: Number(window.outerWidth.toPrecision()),
+    y: Number(window.outerHeight.toPrecision()),
   });
 
   window.addEventListener('resetEvent', () => {
@@ -39,8 +39,8 @@ export function Canvas(props?: IProps) {
 
   useEffect(() => {
     const canvas: HTMLCanvasElement = canvasRef.current!;
-    canvas.height = 2000;
-    canvas.width = 2000;
+    canvas.height = canvasSize.y;
+    canvas.width = canvasSize.x;
     const context = canvas.getContext('2d');
     context!.createImageData(canvasSize.x, canvasSize.y);
 
@@ -142,11 +142,6 @@ export function Canvas(props?: IProps) {
     }
   };
   drawOther();
-
-  const handleResetOnClick = () => {
-    reset();
-    props?.onReset?.();
-  };
 
   const reset = () => {
     setImageData(null!);
