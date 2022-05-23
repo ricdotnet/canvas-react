@@ -1,4 +1,4 @@
-import './Canvas.css';
+import './Canvas.scss';
 import { useEffect, useRef, useState } from 'react';
 import { ColorRow } from '../ColorRow/ColorRow';
 
@@ -12,60 +12,49 @@ interface IProps {
   room?: string;
   ws?: WebSocket;
   user?: number;
+  onChange?: (v: any) => void;
+  onReset?: () => void;
+  other?: any;
 }
 
 export function Canvas(props?: IProps) {
   const [isMouseClicked, setIsMouseClicked] = useState<boolean>(false);
   const [location, setLocation] = useState<ILocation>({ x: 0, y: 0 });
   const [color, setColor] = useState('red');
-  // const [user, setUser] = useState('');
   const [imageData, setImageData] = useState<ImageData>();
   const [canvasData, setCanvasData] = useState<HTMLCanvasElement>();
   const [contextData, setContextData] = useState<CanvasRenderingContext2D>();
   const [previousData, setPreviousData] = useState<ImageData[]>([]);
-  const [keysPressed, setKeysPressed] = useState({ z: false, control: false });
-  const [prop, setProp] = useState(props!);
-  const [roomId, setRoomId] = useState(prop.room);
 
-  const myRef = useRef(null);
+  const canvasRef = useRef(null);
   const [canvasSize, setCanvasSize] = useState({
-    x: window.innerWidth,
-    y: window.innerHeight,
+    x: 2000,
+    y: 2000,
   });
+
+  window.addEventListener('resetEvent', () => {
+    console.log('did reset....');
+    reset();
+  });
+
   useEffect(() => {
-    const canvas: HTMLCanvasElement = myRef.current!;
-    canvas.height = canvasSize.y;
-    canvas.width = canvasSize.x;
+    const canvas: HTMLCanvasElement = canvasRef.current!;
+    canvas.height = 2000;
+    canvas.width = 2000;
     const context = canvas.getContext('2d');
     context!.createImageData(canvasSize.x, canvasSize.y);
 
     setCanvasData(canvas);
     setContextData(context!);
-
-    // setUser(Date.now().toString());
   }, []);
 
-  // ws.onopen = () => {
-  //   const userId = Date.now();
-  //   ws.send(userId.toString());
-  // };
-  if (prop.ws) {
-    prop.ws.onmessage! = (e: any) => {
-      // const newUsers = [...users, e.data];
-      // setUsers(newUsers);
-      // console.log(JSON.parse(e.data));
-      drawOther(JSON.parse(e.data));
-      // console.log(e.data);
-    };
-  }
-
-  window.addEventListener('resize', () => {
-    // const data = contextData!.getImageData(0, 0, window.innerWidth, window.innerHeight);
-    canvasData!.width = window.innerWidth;
-    canvasData!.height = window.innerHeight;
-
-    contextData!.putImageData(imageData!, 0, 0);
-  });
+  // window.addEventListener('resize', () => {
+  //   // const data = contextData!.getImageData(0, 0, window.innerWidth, window.innerHeight);
+  //   canvasData!.width = window.innerWidth;
+  //   canvasData!.height = window.innerHeight;
+  //
+  //   contextData!.putImageData(imageData!, 0, 0);
+  // });
   window.addEventListener('keydown', (e) => {
     if (e.key === 'u') {
       undo();
@@ -80,18 +69,6 @@ export function Canvas(props?: IProps) {
   const mouseDown = (e: any) => {
     setIsMouseClicked(true);
     setLocation({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
-
-    // TODO: This throws an error of invalid type for ImageData when resetting or when starting.
-    // Solution: using an array to store only 1 object of ImageData everytime and restore if length===1 is true.
-    // contextData!.putImageData(imageData!, 0, 0);
-    // contextData!.beginPath();
-    // contextData!.lineWidth = 5;
-    // contextData!.lineCap = 'round';
-    // contextData!.lineJoin = 'miter';
-    // contextData!.strokeStyle = color;
-    // contextData!.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-    // contextData!.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-    // contextData!.stroke();
   };
 
   const mouseUp = () => {
@@ -103,7 +80,6 @@ export function Canvas(props?: IProps) {
   const savePreviousData = () => {
     if (imageData !== undefined) {
       previousData.push(imageData!);
-      // console.log(imageData);
       setPreviousData(previousData);
     }
   };
@@ -120,7 +96,6 @@ export function Canvas(props?: IProps) {
   const draw = (e: any) => {
     if (isMouseClicked) {
       const cLoc = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
-      // sendStart(cLoc.x, cLoc.y);
       contextData!.beginPath();
       contextData!.lineWidth = 5;
       contextData!.lineCap = 'round';
@@ -131,56 +106,46 @@ export function Canvas(props?: IProps) {
       // contextData!.bezierCurveTo(cLoc.x, cLoc.y, location.x, location.y, location.x, location.y);
       contextData!.lineTo(location.x, location.y);
       contextData!.stroke();
-      // sendEnd();
       setStart(e);
-      sendStart(location.x, location.y);
+
+      if (props && props!.onChange) {
+        props?.onChange({
+          type: 'canvasLine',
+          lineWidth: contextData!.lineWidth,
+          lineCap: contextData!.lineCap,
+          lineJoin: contextData!.lineJoin,
+          strokeStyle: contextData!.strokeStyle,
+          moveTo: {
+            x: cLoc.x,
+            y: cLoc.y,
+          },
+          lineTo: {
+            x: location.x,
+            y: location.y,
+          },
+        });
+      }
     }
   };
 
-  const sendStart = (x: number, y: number) => {
-    if (prop.room) {
-      const drawDataStart = {
-        key: 'start',
-        user: prop.user,
-        color: color,
-        moveTo: {
-          x: x,
-          y: y,
-        },
-      };
-      prop.ws!.send(JSON.stringify(drawDataStart));
-    }
-  };
-  const sendEnd = () => {
-    if (prop.room) {
-      const drawDataEnd = {
-        key: 'end',
-        user: prop.user,
-        color: color,
-        lineTo: {
-          x: location.x,
-          y: location.y,
-        },
-      };
-      prop.ws!.send(JSON.stringify(drawDataEnd));
-    }
-  };
-
-  const drawOther = (data: any) => {
+  const drawOther = () => {
     // if (data.user !== user) {
-    contextData!.beginPath();
-    contextData!.lineWidth = 5;
-    contextData!.lineCap = 'round';
-    contextData!.strokeStyle = data.color;
+    if (props && props!.other) {
+      const other = props!.other;
+      contextData!.beginPath();
+      contextData!.lineWidth = other.lineWidth;
+      contextData!.lineCap = other.lineCap;
+      contextData!.strokeStyle = other.strokeStyle;
+      contextData!.moveTo(other.moveTo.x, other.moveTo.y);
+      contextData!.lineTo(other.lineTo.x, other.lineTo.y);
+      contextData!.stroke();
+    }
+  };
+  drawOther();
 
-    if (data.moveTo) {
-      contextData!.moveTo(data.moveTo.x, data.moveTo.y);
-    }
-    if (data.lineTo) {
-      contextData!.lineTo(data.lineTo.x, data.lineTo.y);
-    }
-    contextData!.stroke();
-    // }
+  const handleResetOnClick = () => {
+    reset();
+    props?.onReset?.();
   };
 
   const reset = () => {
@@ -196,7 +161,7 @@ export function Canvas(props?: IProps) {
     <div>
       <ColorRow onColorChange={handleColorSelect} onReset={reset} />
       <canvas
-        ref={myRef}
+        ref={canvasRef}
         className="drawing-area"
         onPointerDown={(e) => mouseDown(e)}
         onPointerMove={(e) => draw(e)}

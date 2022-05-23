@@ -1,0 +1,10 @@
+.room {
+  display: block;
+  width: 70%;
+  margin: 1em auto;
+
+  &__text_area {
+    width: 100%;
+    resize: none;
+  }
+}
