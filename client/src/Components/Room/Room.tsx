@@ -7,7 +7,8 @@ import { useState } from 'react';
 let websocket: WebSocket;
 function connectWebsocket(endpoint: string) {
   if (!websocket) {
-    websocket = new WebSocket(`wss://ws.unispaces.uk/${endpoint}`);
+    // websocket = new WebSocket(`wss://ws.unispaces.uk/${endpoint}`);
+    websocket = new WebSocket(`ws://localhost:3001/${endpoint}`);
   }
 }
 
