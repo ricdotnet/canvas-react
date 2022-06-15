@@ -1,7 +1,7 @@
 import express from 'express';
 import http, { IncomingMessage } from 'http';
-import * as WebSocket from 'ws';
 import cors from 'cors';
+import * as WebSocket from 'ws';
 
 import { api } from './api';
 import { addRoom, getRoom, IRoom } from './services/rooms';
@@ -14,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(api);
 
+// TODO: update this next...
 webSocketServer.on('connection', (connection: WebSocket, req: IncomingMessage) => {
   const roomId: string = req.url?.split('/')[1] || '';
   const room: IRoom | undefined = getRoom(roomId);
