@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(api);
 
-// TODO: update this next
+// TODO: update this next...
 webSocketServer.on('connection', (connection: WebSocket, req: IncomingMessage) => {
   const roomId: string = req.url?.split('/')[1] || '';
   const room: IRoom | undefined = getRoom(roomId);
