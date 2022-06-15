@@ -1,7 +1,7 @@
 import express from 'express';
 import http, { IncomingMessage } from 'http';
-import * as WebSocket from 'ws';
 import cors from 'cors';
+import * as WebSocket from 'ws';
 
 import { api } from './api';
 import { addRoom, getRoom, IRoom } from './services/rooms';
