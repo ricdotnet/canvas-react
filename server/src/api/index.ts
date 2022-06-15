@@ -1,4 +1,5 @@
 import { Request, Response, Router } from 'express';
+import { addRoom, getRoom, IRoom } from '../services/rooms';
 
 const api = Router();
 
@@ -7,13 +8,30 @@ api.get('/rooms', (req: Request, res: Response) => {
 });
 
 api.post('/room', (req: Request, res: Response) => {
-  console.log(req.body);
-  res.send({ rooms: 'here we will create rooms...' });
+  const { roomId, owner, password } = req.body;
+
+  if ( !roomId ) {
+    return res.status(401).send({ error: 'A room name is mandatory.' });
+  }
+
+  if ( !owner ) {
+    return res.status(401).send({ error: 'A username is mandatory.' });
+  }
+
+  addRoom({ roomId, owner, password });
+
+  res.send({ response: 'Room added with success!' });
 });
 
 api.get('/room/:roomId', (req: Request, res: Response) => {
-  console.log(req.params['roomId']);
-  res.send();
+
+  const room: IRoom | undefined = getRoom(req.params['roomId']);
+
+  if ( !room ) {
+    return res.status(404).send({ error: 'Room not found.' });
+  }
+
+  res.send(room);
 });
 
 export { api };

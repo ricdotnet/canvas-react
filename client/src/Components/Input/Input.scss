@@ -1,0 +1,14 @@
+.input-element {
+  padding: 10px 20px;
+  margin-bottom: 10px;
+  outline: none;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  transition: ease-in-out 100ms;
+  font-size: 15px;
+
+  &:focus {
+    border: 1px solid #666;
+  }
+}
+

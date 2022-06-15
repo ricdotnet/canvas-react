@@ -10,16 +10,26 @@ interface IRoom {
 const client = new Map<string, WebSocket>();
 const rooms: IRoom[] = [];
 
-function addRoom(roomId: string) {
-  console.log('added a new room', roomId);
+function addRoom(room: any) {
+  rooms.push({
+    name: room.roomId,
+    owner: room.owner,
+    users: new Map<string, WebSocket>(),
+    password: room.password || '',
+  });
 }
 
 function getRoom(roomId: string): IRoom | undefined {
   return rooms.find(r => r.name === roomId);
 }
 
+function getRooms() {
+  return rooms;
+}
+
 export {
   IRoom,
   addRoom,
-  getRoom
+  getRoom,
+  getRooms,
 };

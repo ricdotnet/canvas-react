@@ -1,12 +1,14 @@
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import axios from 'axios';
 import { Canvas } from '../Canvas/Canvas';
 import './room.scss';
-import { useState } from 'react';
 
 // const webSocket = new WebSocket(`ws://localhost:3001/someId`);
 let websocket: WebSocket;
+
 function connectWebsocket(endpoint: string) {
-  if (!websocket) {
+  if ( !websocket ) {
     // websocket = new WebSocket(`wss://ws.unispaces.uk/${endpoint}`);
     websocket = new WebSocket(`ws://localhost:3001/${endpoint}`);
   }
@@ -15,46 +17,42 @@ function connectWebsocket(endpoint: string) {
 const resetEvent = new Event('resetEvent');
 
 export function Room() {
-  const { roomId } = useParams();
-  const user = Date.now();
-
+  const [loadingRoom, setLoadingRoom] = useState(true);
+  const [room, setRoom] = useState(null);
   const [otherData, setOtherData] = useState();
-  const [textContent, setTextContent] = useState('');
-  connectWebsocket(roomId!);
 
-  const sendWsEvent = (e: any) => {
-    const msg = {
-      type: 'textArea',
-      message: e.target.value,
-    };
-    websocket.send(JSON.stringify(msg));
-    setTextContent(msg.message);
-  };
+  const { roomId } = useParams();
 
-  websocket.onopen = () => {
-    websocket.send(
-      JSON.stringify({
-        type: 'connection',
+  useEffect(() => {
+    axios.get(`http://localhost:3001/room/${roomId}`)
+      .then((res) => {
+        console.log(res.data);
+        connectWebsocket(roomId!);
+        setLoadingRoom(false);
+        setRoom(res.data);
       })
-    );
-  };
+      .catch((error) => {
+        console.error(error.response);
+        setLoadingRoom(false);
+      });
+  }, []);
 
-  setTimeout(() => {
+  if ( websocket ) {
+    websocket.onopen = () => {
+      websocket.send(
+        JSON.stringify({
+          type: 'connection',
+        })
+      );
+    };
     websocket.onmessage = (e: MessageEvent) => {
       const data = JSON.parse(e.data);
-      console.log(data);
-      setTextContent(data.message);
 
-      if (data.type === 'canvasReset') {
+      if ( data.type === 'canvasReset' ) {
         return dispatchEvent(resetEvent);
       }
-
-      setOtherData(data);
-      if (data.type === 'textArea') {
-        setTextContent(data.message);
-      }
     };
-  }, 3000);
+  }
 
   const handleCanvasUpdate = (v: any) => {
     const toSend = JSON.stringify(v);
@@ -71,18 +69,13 @@ export function Room() {
 
   return (
     <div>
-      <Canvas
-        onChange={(v: any) => handleCanvasUpdate(v)}
-        other={otherData}
-        onReset={handleCanvasReset}
-      />
-      {/*<textarea*/}
-      {/*  id={'textarea'}*/}
-      {/*  rows={50}*/}
-      {/*  className={'room__text_area'}*/}
-      {/*  value={textContent}*/}
-      {/*  onChange={sendWsEvent}*/}
-      {/*/>*/}
+      {(loadingRoom) ? 'room is loading...'
+        : (!loadingRoom && !room) ? 'this room does not exist...'
+          : <Canvas
+            onChange={(v: any) => handleCanvasUpdate(v)}
+            other={otherData}
+            onReset={handleCanvasReset}
+          />}
     </div>
   );
 }
