@@ -3,6 +3,7 @@ import { DialogComponent } from './DialogComponent';
 import { Input } from '../Input/Input';
 import { Button } from '../Button/Button';
 import axios from 'axios';
+import { MessageComponent } from '../Message/MessageComponent';
 
 interface ICreateRoomDialog {
   showDialog: boolean;
