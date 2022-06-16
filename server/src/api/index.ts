@@ -10,6 +10,11 @@ api.get('/rooms', (req: Request, res: Response) => {
 api.post('/room', (req: Request, res: Response) => {
   const { roomId, owner, password } = req.body;
 
+  const room = getRoom(roomId);
+  if ( room ) {
+    return res.status(401).send({ error: 'A room with that name already exists.' });
+  }
+
   if ( !roomId ) {
     return res.status(401).send({ error: 'A room name is mandatory.' });
   }
