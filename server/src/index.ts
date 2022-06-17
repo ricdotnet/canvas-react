@@ -19,12 +19,6 @@ webSocketServer.on('connection', (connection: WebSocket, req: IncomingMessage) =
   const roomId: string = req.url?.split('/')[1] || '';
   const room: IRoom | undefined = getRoom(roomId);
 
-  if (!room) {
-    addRoom(roomId);
-  } else {
-    console.log('found a room!!!');
-  }
-
   // client.set(connection, req.url);
 
   // connection.on('message', (rawData: RawData) => {

@@ -7,6 +7,11 @@ interface IRoom {
   password?: string;
 }
 
+interface IClient {
+  username: string;
+  connection: WebSocket;
+}
+
 const client = new Map<string, WebSocket>();
 const rooms: IRoom[] = [];
 
@@ -27,8 +32,21 @@ function getRooms() {
   return rooms;
 }
 
+function addClient(roomId: string, client: IClient) {
+  const room: IRoom | undefined = getRoom(roomId);
+
+  room?.users.set(client.username, client.connection);
+}
+
+function removeClient(roomId: string, connection: WebSocket) {
+  const room: IRoom | undefined = getRoom(roomId);
+
+  // remove user from here...
+}
+
 export {
   IRoom,
+  IClient,
   addRoom,
   getRoom,
   getRooms,

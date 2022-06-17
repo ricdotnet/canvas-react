@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import { useLocation, useParams } from 'react-router-dom';
 import { Canvas } from '../Canvas/Canvas';
 import './room.scss';
 
@@ -20,21 +19,29 @@ export function Room() {
   const [loadingRoom, setLoadingRoom] = useState(true);
   const [room, setRoom] = useState(null);
   const [otherData, setOtherData] = useState();
+  const [username, setUsername] = useState('');
 
   const { roomId } = useParams();
+  const { state }: any = useLocation();
 
   useEffect(() => {
-    axios.get(`http://localhost:3001/room/${roomId}`)
-      .then((res) => {
-        console.log(res.data);
-        connectWebsocket(roomId!);
-        setLoadingRoom(false);
-        setRoom(res.data);
-      })
-      .catch((error) => {
-        console.error(error.response);
-        setLoadingRoom(false);
-      });
+    // setUsername(localStorage.getItem('username')!);
+    // axios.get(`http://localhost:3001/room/${roomId}`)
+    //   .then((res) => {
+    //     // console.log(res.data);
+    //     connectWebsocket(roomId!);
+    //     setLoadingRoom(false);
+    //     setRoom(res.data);
+    //   })
+    //   .catch((error) => {
+    //     console.error(error.response);
+    //     setLoadingRoom(false);
+    //   });
+    if ( state && state.username ) {
+      setUsername(state.username);
+      connectWebsocket(roomId!);
+      setLoadingRoom(false);
+    }
   }, []);
 
   if ( websocket ) {
@@ -69,8 +76,8 @@ export function Room() {
 
   return (
     <div>
-      {(loadingRoom) ? 'room is loading...'
-        : (!loadingRoom && !room) ? 'this room does not exist...'
+      {(loadingRoom || !username) ? 'room is loading...'
+        : (!loadingRoom && !username) ? 'this room does not exist...'
           : <Canvas
             onChange={(v: any) => handleCanvasUpdate(v)}
             other={otherData}

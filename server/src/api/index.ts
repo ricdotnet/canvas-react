@@ -29,14 +29,17 @@ api.post('/room', (req: Request, res: Response) => {
 });
 
 api.get('/room/:roomId', (req: Request, res: Response) => {
-
   const room: IRoom | undefined = getRoom(req.params['roomId']);
 
   if ( !room ) {
     return res.status(404).send({ error: 'Room not found.' });
   }
 
-  res.send(room);
+  if ( room.password !== req.query['password'] ) {
+    return res.status(401).send({ error: 'The password is incorrect.' });
+  }
+
+  res.send({ message: 'Success.' });
 });
 
 export { api };
