@@ -28,14 +28,14 @@ api.post('/room', (req: Request, res: Response) => {
   res.send({ response: 'Room added with success!' });
 });
 
-api.get('/room/:roomId', (req: Request, res: Response) => {
+api.post('/room/:roomId', (req: Request, res: Response) => {
   const room: IRoom | undefined = getRoom(req.params['roomId']);
 
   if ( !room ) {
     return res.status(404).send({ error: 'Room not found.' });
   }
 
-  if ( room.password !== req.query['password'] ) {
+  if ( room.password !== req.body['password'] ) {
     return res.status(401).send({ error: 'The password is incorrect.' });
   }
 

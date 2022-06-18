@@ -33,6 +33,7 @@ export function ColorRow(props: IColorRow) {
   };
 
   const onCreateRoomSuccess = () => {
+    setShowCreateDialog(false);
   };
 
   const onJoinRoomClick = () => {
@@ -44,6 +45,7 @@ export function ColorRow(props: IColorRow) {
   };
 
   const onJoinRoomSuccess = () => {
+    setShowJoinDialog(false);
   };
 
   return (

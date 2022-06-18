@@ -41,6 +41,8 @@ export function Room() {
       setUsername(state.username);
       connectWebsocket(roomId!);
       setLoadingRoom(false);
+    } else {
+      setLoadingRoom(false);
     }
   }, []);
 
@@ -49,11 +51,13 @@ export function Room() {
       websocket.send(
         JSON.stringify({
           type: 'connection',
+          username,
         })
       );
     };
     websocket.onmessage = (e: MessageEvent) => {
       const data = JSON.parse(e.data);
+      setOtherData(data);
 
       if ( data.type === 'canvasReset' ) {
         return dispatchEvent(resetEvent);
@@ -62,7 +66,8 @@ export function Room() {
   }
 
   const handleCanvasUpdate = (v: any) => {
-    const toSend = JSON.stringify(v);
+    let data = Object.assign(v, { username });
+    const toSend = JSON.stringify(data);
     websocket.send(toSend);
   };
 
@@ -76,7 +81,7 @@ export function Room() {
 
   return (
     <div>
-      {(loadingRoom || !username) ? 'room is loading...'
+      {(loadingRoom) ? 'room is loading...'
         : (!loadingRoom && !username) ? 'this room does not exist...'
           : <Canvas
             onChange={(v: any) => handleCanvasUpdate(v)}
